@@ -30,32 +30,59 @@ export function PointsPreview({ points, onPlay }: Props) {
           key={i}
           cx={x}
           cy={y}
-          r={40}
+          r={20}
           fill='none'
           stroke='orange'
-          strokeWidth={10}
+          strokeWidth={6}
           strokeDasharray={'16 4'}
           className='animate-[spin_3s_linear_infinite] origin-center'
           style={{ transformBox: 'fill-box' }}
         />
       ))}
 
-      {points.length > 2 && (
-        <circle
-          cx={points[0][0]}
-          cy={points[0][1]}
-          r={50}
-          fill='green'
-          stroke='none'
-          style={{ transformBox: 'fill-box' }}
-          className='cursor-pointer origin-center'
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onPlay();
-          }}
-        />
+      {points.length > 1 && (
+        <g
+          className={
+            'transition-opacity duration-500 ' +
+            (points.length > 2 ? 'opacity-100' : 'opacity-0')
+          }
+        >
+          <circle
+            cx={points[0][0]}
+            cy={points[0][1]}
+            r={40}
+            fill='green'
+            stroke='none'
+            style={{ transformBox: 'fill-box' }}
+            className={
+              'cursor-pointer origin-center ' +
+              'transition-all origin-center duration-500 ' +
+              (points.length > 2
+                ? 'opacity-100 scale-100'
+                : 'opacity-0 scale-0')
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPlay();
+            }}
+          />
+
+          <polygon
+            className='origin-center'
+            style={{ transformBox: 'fill-box' }}
+            points={playIcon(points[0][0] + 3, points[0][1])}
+            fill='white'
+          />
+        </g>
       )}
     </svg>
   );
+}
+
+function playIcon(x: number, y: number) {
+  const w = 30;
+  return `${x - w / 2}, ${y - w / 2} ${x + w / 2}, ${y} ${x - w / 2}, ${
+    y + w / 2
+  }`;
 }

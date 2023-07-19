@@ -19,7 +19,7 @@ export function sketch(
   let r = 54;
   let g = 69;
   let b = 79;
-  let alpha = 0.1;
+  let alpha = 0.08;
 
   const startTime = Date.now();
   let stopped = false;

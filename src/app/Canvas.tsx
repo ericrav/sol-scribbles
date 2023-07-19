@@ -23,7 +23,7 @@ export function Canvas() {
     ][];
     setPoints(newPoints);
 
-    if (step === 0) setStep(1);
+    if (step === 0 && newPoints.length > 2) setStep(1);
     if (step === 2) setStep(3);
   };
 
@@ -42,14 +42,21 @@ export function Canvas() {
 
   useEffect(() => {
     const clearPoints = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      stopRef.current?.();
-      setPoints([]);
+      if (e.key === 'Escape') {
+        stopRef.current?.();
+        setPoints([]);
+      }
+
+      if (e.key === 'Return' && points.length > 2) {
+        stopRef.current?.();
+        stopRef.current = sketch(ctx.current, points);
+        setPoints([]);
+      }
     };
 
     window.addEventListener('keydown', clearPoints);
     return () => window.removeEventListener('keydown', clearPoints);
-  }, []);
+  }, [points]);
 
   return (
     <div className='w-full h-full relative' onClick={handleClick}>
@@ -62,11 +69,15 @@ export function Canvas() {
           if (step === 1) setStep(2);
         }}
       />
-      <div className='absolute bottom-8 inset-x-0 text-center pointer-events-none'>
-        {step === 0 && 'click to place points'}
-        {step === 1 && 'click the green circle to fill'}
-        {step === 2 && 'click again when fill is solid enough'}
-      </div>
+      {step < 3 && (
+        <div className='absolute bottom-8 inset-x-0 text-center pointer-events-none'>
+          <span className='inline-block p-4 text-[#efeeee] bg-black'>
+            {step === 0 && 'click to place points'}
+            {step === 1 && 'click the green circle to fill'}
+            {step === 2 && 'click again when fill is solid enough'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

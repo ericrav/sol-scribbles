@@ -1,8 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Schibsted_Grotesk } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'] })
+const font = Schibsted_Grotesk({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Sol LeWitt Scribbles',
@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={font.className}>{children}</body>
     </html>
   )
 }
