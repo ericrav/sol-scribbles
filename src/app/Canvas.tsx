@@ -12,10 +12,17 @@ export function Canvas() {
 
   const stopRef = useRef<() => void>();
 
+  const [isDrawing, setIsDrawing] = useState(false);
   const [points, setPoints] = useState<[number, number][]>([]);
 
   const handleClick = (e: MouseEvent) => {
     stopRef.current?.();
+
+    if (isDrawing) {
+      setIsDrawing(false);
+      if (step === 2) setStep(3);
+      return;
+    }
 
     const newPoints = [...points, [e.clientX * 2, e.clientY * 2]] as [
       number,
@@ -47,9 +54,10 @@ export function Canvas() {
         setPoints([]);
       }
 
-      if (e.key === 'Return' && points.length > 2) {
+      if (e.key === 'Enter' && points.length > 2) {
         stopRef.current?.();
         stopRef.current = sketch(ctx.current, points);
+        setIsDrawing(true);
         setPoints([]);
       }
     };
@@ -59,12 +67,19 @@ export function Canvas() {
   }, [points]);
 
   return (
-    <div className='w-full h-full relative' onClick={handleClick}>
+    <div
+      className={
+        'w-full h-full relative ' +
+        (isDrawing ? 'cursor-progress' : 'cursor-crosshair')
+      }
+      onClick={handleClick}
+    >
       <canvas className='w-full h-full' ref={ref}></canvas>
       <PointsPreview
         points={points}
         onPlay={() => {
           stopRef.current = sketch(ctx.current, points);
+          setIsDrawing(true);
           setPoints([]);
           if (step === 1) setStep(2);
         }}
