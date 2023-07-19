@@ -51,6 +51,7 @@ export function Canvas() {
     const clearPoints = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         stopRef.current?.();
+        setIsDrawing(false);
         setPoints([]);
       }
 
