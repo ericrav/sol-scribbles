@@ -1,14 +1,21 @@
+import { useEffect, useState } from 'react';
+
 interface Props {
   points: [number, number][];
   onPlay: () => void;
 }
 
 export function PointsPreview({ points, onPlay }: Props) {
+  const [viewBox, setViewBox] = useState('0 0 400 400');
+  useEffect(() => {
+    setViewBox(`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`);
+  }, []);
+
   return (
     <svg
       className='absolute inset-0'
       xmlns='http://www.w3.org/2000/svg'
-      viewBox={`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`}
+      viewBox={viewBox}
     >
       <polyline
         points={points.map(([x, y]) => `${x},${y}`).join(' ')}
