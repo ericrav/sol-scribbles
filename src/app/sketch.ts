@@ -51,6 +51,28 @@ interface Point {
   y: number;
 }
 
+function getRandomPointInPolygon(polygon: [number, number][]) {
+  const [minX, maxX] = polygon.reduce(
+    (acc, [x]) => [Math.min(acc[0], x), Math.max(acc[1], x)],
+    [Infinity, -Infinity]
+  );
+  const [minY, maxY] = polygon.reduce(
+    (acc, [, y]) => [Math.min(acc[0], y), Math.max(acc[1], y)],
+    [Infinity, -Infinity]
+  );
+
+  let point: Point;
+
+  do {
+    point = {
+      x: Math.random() * (maxX - minX) + minX,
+      y: Math.random() * (maxY - minY) + minY,
+    };
+  } while (!pointInPolygon([point.x, point.y], polygon));
+
+  return point;
+}
+
 function scribble(
   ctx: CanvasRenderingContext2D,
   polygon: [number, number][],
@@ -69,6 +91,12 @@ function scribble(
 
   let t = 0;
   const maxT = 250;
+
+  if (!pointInPolygon([cursor.x, cursor.y], polygon)) {
+    const newPoint = getRandomPointInPolygon(polygon);
+    cursor.x = newPoint.x;
+    cursor.y = newPoint.y;
+  }
 
   ctx.beginPath();
   ctx.moveTo(cursor.x, cursor.y);
@@ -91,8 +119,9 @@ function scribble(
     if (pointInPolygon([cursor.x, cursor.y], polygon)) {
       points.push({ ...cursor });
     } else {
-      cursor.x += (center[0] - cursor.x) > 0 ? 1 : -1;
-      cursor.y += (center[1] - cursor.y) > 0 ? 1 : -1;
+      cursor.x += center[0] - cursor.x > 0 ? 1 : -1;
+      cursor.y += center[1] - cursor.y > 0 ? 1 : -1;
+      break;
     }
   }
 
