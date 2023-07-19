@@ -2,10 +2,13 @@
 
 import { MouseEvent, useEffect, useRef, useState } from 'react';
 import { sketch } from './sketch';
+import { PointsPreview } from './PointsPreview';
 
 export function Canvas() {
   const ref = useRef<HTMLCanvasElement>(null!);
   const ctx = useRef<CanvasRenderingContext2D>(null!);
+
+  const [step, setStep] = useState(0);
 
   const stopRef = useRef<() => void>();
 
@@ -14,13 +17,14 @@ export function Canvas() {
   const handleClick = (e: MouseEvent) => {
     stopRef.current?.();
 
-    const newPoints = [...points, [e.clientX * 2, e.clientY * 2]] as [number, number][];
+    const newPoints = [...points, [e.clientX * 2, e.clientY * 2]] as [
+      number,
+      number
+    ][];
     setPoints(newPoints);
 
-    if (newPoints.length > 5) {
-      stopRef.current = sketch(ctx.current, newPoints);
-      setPoints([]);
-    }
+    if (step === 0) setStep(1);
+    if (step === 2) setStep(3);
   };
 
   useEffect(() => {
@@ -45,6 +49,21 @@ export function Canvas() {
   }, []);
 
   return (
-    <canvas className='w-full h-full' ref={ref} onClick={handleClick}></canvas>
+    <div className='w-full h-full relative' onClick={handleClick}>
+      <canvas className='w-full h-full' ref={ref}></canvas>
+      <PointsPreview
+        points={points}
+        onPlay={() => {
+          stopRef.current = sketch(ctx.current, points);
+          setPoints([]);
+          if (step === 1) setStep(2);
+        }}
+      />
+      <div className='absolute bottom-8 inset-x-0 text-center pointer-events-none'>
+        {step === 0 && 'click to place points'}
+        {step === 1 && 'click the green circle to fill'}
+        {step === 2 && 'click again when fill is solid enough'}
+      </div>
+    </div>
   );
 }
