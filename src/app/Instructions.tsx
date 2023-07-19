@@ -23,7 +23,7 @@ export function Instructions() {
   if (begin) return null;
 
   return (
-    <div className='absolute inset-0 z-50 flex justify-center items-center'>
+    <div className='absolute inset-0 z-50 flex justify-center items-center bg-[#efeeee]'>
       <div className='p-4 bg-black text-[#efeeee] shadow-lg text-center min-w-[450px] min-h-[600px] flex flex-col'>
         <textarea
           value={text}
