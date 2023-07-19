@@ -38,14 +38,17 @@ export function Canvas() {
       ctx.current.fillRect(0, 0, canvas.width, canvas.height);
       ctx.current.globalCompositeOperation = 'darken';
     });
+  }, []);
 
-    // const resize = () => {
-    //   canvas.width = window.innerWidth * 2;
-    //   canvas.height = window.innerHeight * 2;
-    // };
-    // window.addEventListener('resize', resize);
-    // resize();
-    // return () => window.removeEventListener('resize', resize);
+  useEffect(() => {
+    const clearPoints = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      stopRef.current?.();
+      setPoints([]);
+    };
+
+    window.addEventListener('keydown', clearPoints);
+    return () => window.removeEventListener('keydown', clearPoints);
   }, []);
 
   return (
