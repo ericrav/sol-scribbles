@@ -1,21 +1,25 @@
 'use client';
 
-import { MouseEvent, use, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import { sketch } from './sketch';
 
 export function Canvas() {
   const ref = useRef<HTMLCanvasElement>(null!);
   const ctx = useRef<CanvasRenderingContext2D>(null!);
 
+  const stopRef = useRef<() => void>();
+
   const [points, setPoints] = useState<[number, number][]>([]);
 
   const handleClick = (e: MouseEvent) => {
-    setPoints([...points, [e.clientX * 2, e.clientY * 2]]);
+    stopRef.current?.();
 
-    console.log(points);
+    const newPoints = [...points, [e.clientX * 2, e.clientY * 2]] as [number, number][];
+    setPoints(newPoints);
 
-    if (points.length > 7) {
-      sketch(ctx.current, points);
+    if (newPoints.length > 5) {
+      stopRef.current = sketch(ctx.current, newPoints);
+      setPoints([]);
     }
   };
 
@@ -26,10 +30,10 @@ export function Canvas() {
 
     requestAnimationFrame(() => {
       ctx.current = canvas.getContext('2d')!;
-      ctx.current.fillStyle = '#f2f2f2';
+      ctx.current.fillStyle = '#efeeee';
       ctx.current.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.current.globalCompositeOperation = 'darken';
     });
-    // ctx.current.globalCompositeOperation = 'darken';
 
     // const resize = () => {
     //   canvas.width = window.innerWidth * 2;

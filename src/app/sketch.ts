@@ -22,6 +22,7 @@ export function sketch(
   let alpha = 0.1;
 
   const startTime = Date.now();
+  let stopped = false;
   const draw = () => {
     ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     const elapsed = Date.now() - startTime;
@@ -40,10 +41,17 @@ export function sketch(
     scribble(ctx, polygon, center, cursor2);
     scribble(ctx, polygon, center, cursor3);
     scribble(ctx, polygon, center, cursor4);
-    requestAnimationFrame(draw);
+
+    if (!stopped) {
+      requestAnimationFrame(draw);
+    }
   };
 
   requestAnimationFrame(draw);
+
+  return () => {
+    stopped = true;
+  };
 }
 
 interface Point {
