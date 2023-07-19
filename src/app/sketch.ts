@@ -8,8 +8,6 @@ export function sketch(
     .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
     .map((n) => n / polygon.length) as [number, number];
 
-  console.log({ center });
-
   // const cursor = { x: center[0], y: center[1] };
   const cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   const cursor2 = { ...cursor };
