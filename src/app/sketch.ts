@@ -1,24 +1,25 @@
+var pointInPolygon = require('point-in-polygon');
+
 export function sketch(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d')!;
   ctx.fillStyle = '#f2f2f2';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'darken';
 
-  const cursor = { x: canvas.width / 2, y: canvas.height / 2 };
-  const cursor2 = { x: canvas.width / 2, y: canvas.height / 2 };
-  const cursor3 = { x: canvas.width / 2, y: canvas.height / 2 };
-  const cursor4 = { x: canvas.width / 2, y: canvas.height / 2 };
+  const cursor = { x: center[0], y: center[1] };
+  const cursor2 = { ...cursor };
+  const cursor3 = { ...cursor };
+  const cursor4 = { ...cursor };
 
   let r = 54;
   let g = 69;
   let b = 79;
-  let alpha = 0.10;
+  let alpha = 0.1;
 
   ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
 
   const startTime = Date.now();
   const draw = () => {
-
     const elapsed = Date.now() - startTime;
 
     if (elapsed > 5000) {
@@ -46,6 +47,22 @@ interface Point {
   x: number;
   y: number;
 }
+
+// 5-pointed star
+const star = [
+  [200, 62],
+  [222, 145],
+  [311, 145],
+  [239, 197],
+  [266, 281],
+  [200, 230],
+  [134, 281],
+  [161, 197],
+  [89, 145],
+  [178, 145],
+];
+
+const center = star.reduce((acc, [x, y]) => ([acc[0] + x, acc[1] + y]), [0, 0]).map(n => n / star.length) as [number, number];
 
 function scribble(ctx: CanvasRenderingContext2D, cursor: Point) {
   const weight = 150;
@@ -80,18 +97,16 @@ function scribble(ctx: CanvasRenderingContext2D, cursor: Point) {
     vSweep += Math.random() - 0.5;
     // ctx.lineTo(nextX, nextY);
 
-    if (
-      cursor.x >= 0 &&
-      cursor.x < ctx.canvas.width &&
-      cursor.y >= 0 &&
-      cursor.y < ctx.canvas.height
-    ) {
+    if (pointInPolygon([cursor.x, cursor.y], star)) {
       points.push({ ...cursor });
     } else {
-      if (cursor.x < 0) cursor.x = 0;
-      if (cursor.x >= ctx.canvas.width) cursor.x = ctx.canvas.width - 1;
-      if (cursor.y < 0) cursor.y = 0;
-      if (cursor.y >= ctx.canvas.height) cursor.y = ctx.canvas.height - 1;
+      cursor.x = center[0];
+      cursor.y = center[1];
+      break;
+      // if (cursor.x < 0) cursor.x = 0;
+      // if (cursor.x >= ctx.canvas.width) cursor.x = ctx.canvas.width - 1;
+      // if (cursor.y < 0) cursor.y = 0;
+      // if (cursor.y >= ctx.canvas.height) cursor.y = ctx.canvas.height - 1;
     }
   }
 
