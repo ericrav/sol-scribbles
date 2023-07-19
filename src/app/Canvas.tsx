@@ -90,7 +90,7 @@ export function Canvas() {
           <span className='inline-block p-4 text-[#efeeee] bg-black'>
             {step === 0 && 'click to place points'}
             {step === 1 && 'click the green circle to fill'}
-            {step === 2 && 'click again when fill is solid enough'}
+            {step === 2 && 'click again to stop scribbling'}
           </span>
         </div>
       )}
