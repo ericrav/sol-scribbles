@@ -1,12 +1,17 @@
 var pointInPolygon = require('point-in-polygon');
 
-export function sketch(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = '#f2f2f2';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'darken';
+export function sketch(
+  ctx: CanvasRenderingContext2D,
+  polygon: [number, number][]
+) {
+  const center = polygon
+    .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
+    .map((n) => n / polygon.length) as [number, number];
 
-  const cursor = { x: center[0], y: center[1] };
+  console.log({ center });
+
+  // const cursor = { x: center[0], y: center[1] };
+  const cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   const cursor2 = { ...cursor };
   const cursor3 = { ...cursor };
   const cursor4 = { ...cursor };
@@ -16,27 +21,25 @@ export function sketch(canvas: HTMLCanvasElement) {
   let b = 79;
   let alpha = 0.1;
 
-  ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-
   const startTime = Date.now();
   const draw = () => {
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     const elapsed = Date.now() - startTime;
 
     if (elapsed > 5000) {
       r *= 0.99991;
       g *= 0.99991;
       b *= 0.99991;
-      ctx.strokeStyle = `rgba(${r | 0}, ${g | 0}, ${b | 0}, ${alpha})`;
     }
 
     if (elapsed > 15000) {
       alpha = 0.14;
     }
 
-    scribble(ctx, cursor);
-    scribble(ctx, cursor2);
-    scribble(ctx, cursor3);
-    scribble(ctx, cursor4);
+    scribble(ctx, polygon, center, cursor);
+    scribble(ctx, polygon, center, cursor2);
+    scribble(ctx, polygon, center, cursor3);
+    scribble(ctx, polygon, center, cursor4);
     requestAnimationFrame(draw);
   };
 
@@ -48,24 +51,13 @@ interface Point {
   y: number;
 }
 
-// 5-pointed star
-const star = [
-  [200, 62],
-  [222, 145],
-  [311, 145],
-  [239, 197],
-  [266, 281],
-  [200, 230],
-  [134, 281],
-  [161, 197],
-  [89, 145],
-  [178, 145],
-];
-
-const center = star.reduce((acc, [x, y]) => ([acc[0] + x, acc[1] + y]), [0, 0]).map(n => n / star.length) as [number, number];
-
-function scribble(ctx: CanvasRenderingContext2D, cursor: Point) {
-  const weight = 150;
+function scribble(
+  ctx: CanvasRenderingContext2D,
+  polygon: [number, number][],
+  center: [number, number],
+  cursor: Point
+) {
+  const weight = 125;
   let hVel = Math.random() * weight - weight / 2;
   let vVel = Math.random() * weight - weight / 2;
   let hFreq = Math.random() * weight - weight / 2;
@@ -95,19 +87,17 @@ function scribble(ctx: CanvasRenderingContext2D, cursor: Point) {
     vPhase += Math.random() - 0.5;
     hSweep += Math.random() - 0.5;
     vSweep += Math.random() - 0.5;
-    // ctx.lineTo(nextX, nextY);
 
-    if (pointInPolygon([cursor.x, cursor.y], star)) {
+    if (pointInPolygon([cursor.x, cursor.y], polygon)) {
       points.push({ ...cursor });
     } else {
-      cursor.x = center[0];
-      cursor.y = center[1];
-      break;
-      // if (cursor.x < 0) cursor.x = 0;
-      // if (cursor.x >= ctx.canvas.width) cursor.x = ctx.canvas.width - 1;
-      // if (cursor.y < 0) cursor.y = 0;
-      // if (cursor.y >= ctx.canvas.height) cursor.y = ctx.canvas.height - 1;
+      cursor.x += (center[0] - cursor.x) > 0 ? 1 : -1;
+      cursor.y += (center[1] - cursor.y) > 0 ? 1 : -1;
     }
+  }
+
+  if (points.length < 2) {
+    return;
   }
 
   points.forEach((point, i) => {
@@ -118,34 +108,3 @@ function scribble(ctx: CanvasRenderingContext2D, cursor: Point) {
 
   ctx.stroke();
 }
-
-// PVector oscillation(float x, float y, int maxT) {
-//   int weight = 5;
-//   float hVel   = (random(1) * weight) - (weight/2);
-//   float vVel   = (random(1) * weight) - (weight/2);
-//   float hFreq  = (random(1) * weight) - (weight/2);
-//   float vFreq  = (random(1) * weight) - (weight/2);
-//   float hPhase = (random(1) * weight) - (weight/2);
-//   float vPhase = (random(1) * weight) - (weight/2);
-//   float hSweep = (random(1) * 2) - 1;
-//   float vSweep = (random(1) * 2) - 1;
-//   noFill();
-//   beginShape();
-//   vertex(x, y);
-//   PVector lastPoint = draw(maxT, 0, x, y, hVel, vVel, hFreq, vFreq, hPhase, vPhase, hSweep, vSweep);
-//   return lastPoint;
-// }
-
-// PVector draw(int maxT, float t, float x, float y, float hVel, float vVel, float hFreq, float vFreq, float hPhase, float vPhase, float hSweep, float vSweep) {
-//   float nextX = x + (hVel * sin(hFreq * t + hPhase) + hSweep);
-//   float nextY = y + (vVel * sin(vFreq * t + vPhase) + vSweep);
-//   t += dt;
-//   //line(x, y, nextX, nextY);
-//   curveVertex(nextX, nextY);
-//   if (t < maxT) {
-//     return draw(maxT, t, nextX, nextY, hVel, vVel, hFreq, vFreq, hPhase, vPhase, hSweep, vSweep);
-//   } else {
-//     endShape();
-//     return new PVector(x, y);
-//   }
-// }
