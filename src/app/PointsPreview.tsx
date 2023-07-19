@@ -7,8 +7,17 @@ interface Props {
 
 export function PointsPreview({ points, onPlay }: Props) {
   const [viewBox, setViewBox] = useState('0 0 400 400');
+  const [cursor, setCursor] = useState<[number, number]>([0, 0]);
   useEffect(() => {
     setViewBox(`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursor([e.clientX * 2, e.clientY * 2]);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   return (
@@ -18,7 +27,7 @@ export function PointsPreview({ points, onPlay }: Props) {
       viewBox={viewBox}
     >
       <polyline
-        points={points.map(([x, y]) => `${x},${y}`).join(' ')}
+        points={points.map(([x, y]) => `${x},${y}`).join(' ') + ` ${cursor[0]},${cursor[1]}`}
         fill='none'
         stroke='orange'
         opacity={0.5}
@@ -43,9 +52,14 @@ export function PointsPreview({ points, onPlay }: Props) {
       {points.length > 1 && (
         <g
           className={
-            'transition-opacity duration-500 ' +
+            'transition-opacity duration-500 cursor-pointer ' +
             (points.length > 2 ? 'opacity-100' : 'opacity-0')
           }
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onPlay();
+          }}
         >
           <circle
             cx={points[0][0]}
@@ -61,11 +75,6 @@ export function PointsPreview({ points, onPlay }: Props) {
                 ? 'opacity-100 scale-100'
                 : 'opacity-0 scale-0')
             }
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPlay();
-            }}
           />
 
           <polygon
