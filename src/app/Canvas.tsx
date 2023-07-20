@@ -75,6 +75,22 @@ export function Canvas() {
       }
       onClick={handleClick}
     >
+      <div className='fixed bottom-2 right-2 z-50'>
+        <button
+          type='button'
+          className='p-3 border-4 text-[#efeeee] bg-black text-sm shadow-sm'
+          onClick={(e) => {
+            e.stopPropagation();
+            const link = document.createElement('a');
+            link.download = `sol-scribbles-${Date.now()}.png`;
+            link.href = ref.current.toDataURL();
+            link.click();
+          }}
+        >
+          download
+        </button>
+      </div>
+
       <canvas className='w-full h-full' ref={ref}></canvas>
       <PointsPreview
         points={points}
