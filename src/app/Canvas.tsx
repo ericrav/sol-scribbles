@@ -75,7 +75,7 @@ export function Canvas() {
       }
       onClick={handleClick}
     >
-      <div className='fixed bottom-2 right-2 z-50'>
+      <div className='fixed bottom-2 right-2 z-40'>
         <button
           type='button'
           className='p-3 border-4 text-[#efeeee] bg-black text-sm shadow-sm'
@@ -103,11 +103,11 @@ export function Canvas() {
       />
       {step < 3 && (
         <div className='absolute bottom-8 inset-x-0 text-center pointer-events-none'>
-          <span className='inline-block p-4 text-[#efeeee] bg-black'>
+          <div className='inline-block p-4 text-[#efeeee] bg-blue-700'>
             {step === 0 && 'click to place points'}
             {step === 1 && 'click the green circle to fill'}
             {step === 2 && 'click again to stop scribbling'}
-          </span>
+          </div>
         </div>
       )}
     </div>

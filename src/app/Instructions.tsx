@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 export function Instructions() {
   const [begin, setBegin] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
   const [text, setText] = useState('');
 
   useEffect(() => {
