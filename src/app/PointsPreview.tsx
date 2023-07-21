@@ -7,6 +7,8 @@ interface Props {
   onPlay: () => void;
 }
 
+const CROSSHAIR_LENGTH = 16;
+
 export function PointsPreview({ points, isDrawing, cursors, onPlay }: Props) {
   const [viewBox, setViewBox] = useState('0 0 400 400');
   const [cursor, setCursor] = useState<[number, number]>([0, 0]);
@@ -20,13 +22,10 @@ export function PointsPreview({ points, isDrawing, cursors, onPlay }: Props) {
         cancelAnimationFrame(raf);
         const group = cursorsGroupRef.current;
         if (!group) return;
-        const circles = group.querySelectorAll('circle');
-        circles.forEach((circle, i) => {
+        const crosshairs = group.querySelectorAll('g');
+        crosshairs.forEach((g, i) => {
           const { x, y } = cursors[i];
-          const cx = Number(circle.getAttribute('cx'));
-          const cy = Number(circle.getAttribute('cy'));
-          circle.setAttribute('cx', (cx + (x - cx) * 0.15).toString());
-          circle.setAttribute('cy', (cy + (y - cy) * 0.15).toString());
+          g.setAttribute('transform', `translate(${x} ${y})`);
         });
         if (isDrawing) {
           raf = requestAnimationFrame(updateCursors);
@@ -67,8 +66,32 @@ export function PointsPreview({ points, isDrawing, cursors, onPlay }: Props) {
     >
       {isDrawing && (
         <g ref={cursorsGroupRef}>
-          {cursors.map(({ x, y }, i) => (
-            <circle key={i} cx={x} cy={y} r={8} fill='blue' opacity={0.5} />
+          {cursors.map(({ x, y}, i) => (
+            <g
+              key={i}
+              className='transition-transform duration-[50ms]'
+              transform={`translate(${x} ${y})`}
+            >
+              {/* cross-hairs */}
+              <line
+                x1={-CROSSHAIR_LENGTH}
+                y1={0}
+                x2={CROSSHAIR_LENGTH}
+                y2={0}
+                stroke='blue'
+                opacity={0.5}
+                strokeWidth={3}
+              />
+              <line
+                x1={0}
+                y1={-CROSSHAIR_LENGTH}
+                x2={0}
+                y2={CROSSHAIR_LENGTH}
+                stroke='blue'
+                opacity={0.5}
+                strokeWidth={3}
+              />
+            </g>
           ))}
         </g>
       )}
