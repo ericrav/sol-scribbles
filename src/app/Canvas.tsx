@@ -1,6 +1,6 @@
 'use client';
 
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { sketch } from './sketch';
 import { PointsPreview } from './PointsPreview';
 
@@ -10,6 +10,7 @@ export function Canvas() {
 
   const [step, setStep] = useState(0);
   const [cursors, setCursors] = useState<{ x: number; y: number }[]>([]);
+  const [numberOfCursors, setNumberOfCursors] = useState(5);
 
   const stopRef = useRef<() => void>();
 
@@ -17,11 +18,8 @@ export function Canvas() {
   const [polygon, setPolygon] = useState<[number, number][]>([]);
 
   const handleClick = (e: MouseEvent) => {
-    stopRef.current?.();
-
     if (isDrawing) {
-      setIsDrawing(false);
-      if (step === 2) setStep(3);
+      stopDraw();
       return;
     }
 
@@ -35,20 +33,41 @@ export function Canvas() {
     if (step === 2) setStep(3);
   };
 
-  const startDraw = () => {
-    const center = polygon
-      .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
-      .map((n) => n / polygon.length) as [number, number];
+  const startDraw = useCallback(
+    (numCursors = numberOfCursors) => {
+      if (polygon.length <= 2) {
+        return;
+      }
 
-    const startingCursor = { x: center[0], y: center[1] };
-    const numberOfCursors = 5;
-    const cursors = Array.from({ length: numberOfCursors }).map(() => ({ ...startingCursor }));
-    setCursors(cursors);
-    stopRef.current = sketch(ctx.current, polygon, center, cursors);
-    setIsDrawing(true);
-    setPolygon([]);
-    if (step === 1) setStep(2);
+      const center = polygon
+        .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
+        .map((n) => n / polygon.length) as [number, number];
+
+      const startingCursor = { x: center[0], y: center[1] };
+      const newCursors = Array.from({ length: numCursors }).map((_, i) => ({
+        ...(cursors[i] || startingCursor),
+      }));
+      setCursors(newCursors);
+      stopRef.current?.();
+      stopRef.current = sketch(ctx.current, polygon, center, newCursors);
+      setIsDrawing(true);
+      if (step === 1) setStep(2);
+    },
+    [cursors, numberOfCursors, polygon, step]
+  );
+
+  const changeScribblers = (num: number) => {
+    stopRef.current?.();
+    setNumberOfCursors(num);
+    startDraw(num);
   };
+
+  const stopDraw = useCallback(() => {
+    stopRef.current?.();
+    setIsDrawing(false);
+    setPolygon([]);
+    if (step === 2) setStep(3);
+  }, [step]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -87,20 +106,17 @@ export function Canvas() {
   useEffect(() => {
     const clearPoints = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        stopRef.current?.();
-        setIsDrawing(false);
-        setPolygon([]);
+        stopDraw();
       }
 
-      if (e.key === 'Enter' && polygon.length > 2) {
-        stopRef.current?.();
+      if (e.key === 'Enter') {
         startDraw();
       }
     };
 
     window.addEventListener('keydown', clearPoints);
     return () => window.removeEventListener('keydown', clearPoints);
-  }, [polygon]);
+  }, [startDraw, stopDraw]);
 
   return (
     <div
@@ -110,7 +126,22 @@ export function Canvas() {
       }
       onClick={handleClick}
     >
-      <div className='fixed bottom-2 right-2 z-40'>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className='fixed bottom-2 right-2 z-40 flex justify-end gap-4'
+      >
+        <input
+          type='range'
+          title='Number of scribblers'
+          value={numberOfCursors}
+          onChange={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            changeScribblers(Number(e.target.value));
+          }}
+          min={1}
+          max={15}
+        />
         <button
           type='button'
           className='p-3 border-4 text-[#efeeee] bg-black text-sm shadow-sm'
