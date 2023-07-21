@@ -45,6 +45,22 @@ export function Canvas() {
       ctx.current.fillRect(0, 0, canvas.width, canvas.height);
       ctx.current.globalCompositeOperation = 'darken';
     });
+
+    let raf: number;
+    const resize = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const currentImage = ctx.current.getImageData(0, 0, canvas.width, canvas.height);
+        canvas.width = window.innerWidth * 2;
+        canvas.height = window.innerHeight * 2;
+        ctx.current.fillStyle = '#efeeee';
+        ctx.current.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.current.putImageData(currentImage, 0, 0);
+      });
+    };
+
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
   }, []);
 
   useEffect(() => {

@@ -10,6 +10,16 @@ export function PointsPreview({ points, onPlay }: Props) {
   const [cursor, setCursor] = useState<[number, number]>([0, 0]);
   useEffect(() => {
     setViewBox(`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`);
+    let raf: number;
+    const resize = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setViewBox(`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`);
+      });
+    };
+
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
   }, []);
 
   useEffect(() => {
