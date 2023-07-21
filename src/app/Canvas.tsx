@@ -9,11 +9,12 @@ export function Canvas() {
   const ctx = useRef<CanvasRenderingContext2D>(null!);
 
   const [step, setStep] = useState(0);
+  const [cursors, setCursors] = useState<{ x: number; y: number }[]>([]);
 
   const stopRef = useRef<() => void>();
 
   const [isDrawing, setIsDrawing] = useState(false);
-  const [points, setPoints] = useState<[number, number][]>([]);
+  const [polygon, setPolygon] = useState<[number, number][]>([]);
 
   const handleClick = (e: MouseEvent) => {
     stopRef.current?.();
@@ -24,14 +25,29 @@ export function Canvas() {
       return;
     }
 
-    const newPoints = [...points, [e.clientX * 2, e.clientY * 2]] as [
+    const newPoints = [...polygon, [e.clientX * 2, e.clientY * 2]] as [
       number,
       number
     ][];
-    setPoints(newPoints);
+    setPolygon(newPoints);
 
     if (step === 0 && newPoints.length > 2) setStep(1);
     if (step === 2) setStep(3);
+  };
+
+  const startDraw = () => {
+    const center = polygon
+      .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
+      .map((n) => n / polygon.length) as [number, number];
+
+    const startingCursor = { x: center[0], y: center[1] };
+    const numberOfCursors = 5;
+    const cursors = Array.from({ length: numberOfCursors }).map(() => ({ ...startingCursor }));
+    setCursors(cursors);
+    stopRef.current = sketch(ctx.current, polygon, center, cursors);
+    setIsDrawing(true);
+    setPolygon([]);
+    if (step === 1) setStep(2);
   };
 
   useEffect(() => {
@@ -50,7 +66,12 @@ export function Canvas() {
     const resize = () => {
       if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const currentImage = ctx.current.getImageData(0, 0, canvas.width, canvas.height);
+        const currentImage = ctx.current.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
         canvas.width = window.innerWidth * 2;
         canvas.height = window.innerHeight * 2;
         ctx.current.fillStyle = '#efeeee';
@@ -68,20 +89,18 @@ export function Canvas() {
       if (e.key === 'Escape') {
         stopRef.current?.();
         setIsDrawing(false);
-        setPoints([]);
+        setPolygon([]);
       }
 
-      if (e.key === 'Enter' && points.length > 2) {
+      if (e.key === 'Enter' && polygon.length > 2) {
         stopRef.current?.();
-        stopRef.current = sketch(ctx.current, points);
-        setIsDrawing(true);
-        setPoints([]);
+        startDraw();
       }
     };
 
     window.addEventListener('keydown', clearPoints);
     return () => window.removeEventListener('keydown', clearPoints);
-  }, [points]);
+  }, [polygon]);
 
   return (
     <div
@@ -109,13 +128,10 @@ export function Canvas() {
 
       <canvas className='w-full h-full' ref={ref}></canvas>
       <PointsPreview
-        points={points}
-        onPlay={() => {
-          stopRef.current = sketch(ctx.current, points);
-          setIsDrawing(true);
-          setPoints([]);
-          if (step === 1) setStep(2);
-        }}
+        points={polygon}
+        isDrawing={isDrawing}
+        cursors={cursors}
+        onPlay={() => startDraw()}
       />
       {step < 3 && (
         <div className='absolute bottom-8 inset-x-0 text-center pointer-events-none'>

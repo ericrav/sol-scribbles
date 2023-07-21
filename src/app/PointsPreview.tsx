@@ -1,13 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   points: [number, number][];
+  isDrawing: boolean;
+  cursors: { x: number; y: number }[];
   onPlay: () => void;
 }
 
-export function PointsPreview({ points, onPlay }: Props) {
+export function PointsPreview({ points, isDrawing, cursors, onPlay }: Props) {
   const [viewBox, setViewBox] = useState('0 0 400 400');
   const [cursor, setCursor] = useState<[number, number]>([0, 0]);
+
+  const cursorsGroupRef = useRef<SVGGElement>(null);
+
+  useEffect(() => {
+    if (isDrawing) {
+      const updateCursors = () => {
+        const group = cursorsGroupRef.current;
+        if (!group) return;
+        const circles = group.querySelectorAll('circle');
+        circles.forEach((circle, i) => {
+          const { x, y } = cursors[i];
+          const cx = Number(circle.getAttribute('cx'));
+          const cy = Number(circle.getAttribute('cy'));
+          circle.setAttribute('cx', (cx + (x - cx)*0.15).toString());
+          circle.setAttribute('cy', (cy + (y - cy)*0.15).toString());
+        });
+        requestAnimationFrame(updateCursors);
+      };
+      requestAnimationFrame(updateCursors);
+    }
+  }, [cursors, isDrawing]);
+
   useEffect(() => {
     setViewBox(`0 0 ${window.innerWidth * 2} ${window.innerHeight * 2}`);
     let raf: number;
@@ -37,7 +61,10 @@ export function PointsPreview({ points, onPlay }: Props) {
       viewBox={viewBox}
     >
       <polyline
-        points={points.map(([x, y]) => `${x},${y}`).join(' ') + ` ${cursor[0]},${cursor[1]}`}
+        points={
+          points.map(([x, y]) => `${x},${y}`).join(' ') +
+          ` ${cursor[0]},${cursor[1]}`
+        }
         fill='none'
         stroke='orange'
         opacity={0.5}
@@ -58,6 +85,14 @@ export function PointsPreview({ points, onPlay }: Props) {
           style={{ transformBox: 'fill-box' }}
         />
       ))}
+
+      {isDrawing && (
+        <g ref={cursorsGroupRef}>
+          {cursors.map(({ x, y }, i) => (
+            <circle key={i} cx={x} cy={y} r={8} fill='blue' opacity={0.5} />
+          ))}
+        </g>
+      )}
 
       {points.length > 1 && (
         <g

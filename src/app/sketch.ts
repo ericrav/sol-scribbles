@@ -2,17 +2,10 @@ var pointInPolygon = require('point-in-polygon');
 
 export function sketch(
   ctx: CanvasRenderingContext2D,
-  polygon: [number, number][]
+  polygon: [number, number][],
+  center: [number, number],
+  cursors: { x: number; y: number }[]
 ) {
-  const center = polygon
-    .reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0])
-    .map((n) => n / polygon.length) as [number, number];
-
-  const cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-  const cursor2 = { ...cursor };
-  const cursor3 = { ...cursor };
-  const cursor4 = { ...cursor };
-
   let r = 54;
   let g = 69;
   let b = 79;
@@ -34,10 +27,9 @@ export function sketch(
       alpha = 0.14;
     }
 
-    scribble(ctx, polygon, center, cursor);
-    scribble(ctx, polygon, center, cursor2);
-    scribble(ctx, polygon, center, cursor3);
-    scribble(ctx, polygon, center, cursor4);
+    cursors.forEach((cursor) => {
+      scribble(ctx, polygon, center, cursor);
+    });
 
     if (!stopped) {
       requestAnimationFrame(draw);
@@ -84,7 +76,7 @@ function scribble(
   center: [number, number],
   cursor: Point
 ) {
-  const weight = 125;
+  const weight = 36;
   let hVel = Math.random() * weight - weight / 2;
   let vVel = Math.random() * weight - weight / 2;
   let hFreq = Math.random() * weight - weight / 2;
@@ -95,7 +87,7 @@ function scribble(
   let vSweep = Math.random() * 2 - 1;
 
   let t = 0;
-  const maxT = 250;
+  const maxT = 12;
 
   if (!pointInPolygon([cursor.x, cursor.y], polygon)) {
     const newPoint = getRandomPointInPolygon(polygon);
