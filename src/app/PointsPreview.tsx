@@ -41,7 +41,7 @@ export function PointsPreview({ points, onPlay }: Props) {
         fill='none'
         stroke='orange'
         opacity={0.5}
-        strokeWidth={5}
+        strokeWidth={4}
         strokeDasharray={'16 4'}
       />
       {points.map(([x, y], i) => (
@@ -49,11 +49,11 @@ export function PointsPreview({ points, onPlay }: Props) {
           key={i}
           cx={x}
           cy={y}
-          r={20}
+          r={12}
           fill='none'
           stroke='orange'
-          strokeWidth={6}
-          strokeDasharray={'16 4'}
+          strokeWidth={4}
+          strokeDasharray={'8 2'}
           className='animate-[spin_3s_linear_infinite] origin-center'
           style={{ transformBox: 'fill-box' }}
         />
@@ -74,7 +74,7 @@ export function PointsPreview({ points, onPlay }: Props) {
           <circle
             cx={points[0][0]}
             cy={points[0][1]}
-            r={40}
+            r={32}
             fill='green'
             stroke='none'
             style={{ transformBox: 'fill-box' }}
@@ -100,7 +100,7 @@ export function PointsPreview({ points, onPlay }: Props) {
 }
 
 function playIcon(x: number, y: number) {
-  const w = 30;
+  const w = 28;
   return `${x - w / 2}, ${y - w / 2} ${x + w / 2}, ${y} ${x - w / 2}, ${
     y + w / 2
   }`;
